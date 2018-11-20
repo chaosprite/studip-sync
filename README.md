@@ -3,7 +3,7 @@
 [![Snap Status](https://build.snapcraft.io/badge/woefe/studip-sync.svg)](https://build.snapcraft.io/user/woefe/studip-sync)
 
 Download and synchronize files from Stud.IP -- the campus management platform deployed at several German universities.
-Note that studip-sync currently only works at the University of Passau.
+Note that this fork of studip-sync currently only works at the Pädagogische Hochschule Karlsruhe.
 
 ## Installation
 
