@@ -17,12 +17,25 @@ def extract_sso_url(html):
     raise ParserError("Could not find login form")
 
 
+def extract_ph(html):
+    soup = BeautifulSoup(html, 'lxml')
+    def _extract_value(name):
+        names = soup.find_all(attrs={"name": name})
+        if len(names) != 1:
+            raise ParserError("Could not parse SAML form")
+
+        return names.pop().attrs.get("value", "")
+
+    return {
+        "login_ticket":_extract_value("login_ticket"),
+        "security_token":_extract_value("security_token")
+    }
+
 def extract_saml_data(html):
     soup = BeautifulSoup(html, 'lxml')
 
     def _extract_value(name):
         names = soup.find_all(attrs={"name": name})
-
         if len(names) != 1:
             raise ParserError("Could not parse SAML form")
 
@@ -57,7 +70,7 @@ def extract_csrf_token(html):
 def extract_courses(html):
     soup = BeautifulSoup(html, 'lxml')
     matcher = re.compile(
-        r"https://studip.uni-passau.de/studip/seminar_main.php\?auswahl=[0-9a-f]*$")
+        r"https://lms.ph-karlsruhe.de/studip/seminar_main.php\?auswahl=[0-9a-f]*$")
     links = soup.find_all("a", href=matcher)
 
     for link in links:

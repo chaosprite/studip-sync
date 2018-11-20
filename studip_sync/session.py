@@ -19,23 +19,23 @@ class DownloadError(SessionError):
 class URL(object):
     @staticmethod
     def login_page():
-        return "https://studip.uni-passau.de/studip/index.php?again=yes&sso=shib"
+        return "https://lms.ph-karlsruhe.de/studip/index.php?again=yes"
 
     @staticmethod
     def files_main():
-        return "https://studip.uni-passau.de/studip/dispatch.php/course/files"
+        return "https://lms.ph-karlsruhe.de/studip/dispatch.php/course/files"
 
     @staticmethod
     def bulk_download(folder_id):
-        return "https://studip.uni-passau.de/studip/dispatch.php/file/bulk/{}".format(folder_id)
+        return "https://lms.ph-karlsruhe.de/studip/dispatch.php/file/bulk/{}".format(folder_id)
 
     @staticmethod
     def studip_main():
-        return "https://studip.uni-passau.de/Shibboleth.sso/SAML2/POST"
+        return "https://lms.ph-karlsruhe.de/studip/"
 
     @staticmethod
     def courses():
-        return "https://studip.uni-passau.de/studip/dispatch.php/my_courses"
+        return "https://lms.ph-karlsruhe.de/studip/dispatch.php/my_courses"
 
 
 class Session(object):
@@ -54,29 +54,27 @@ class Session(object):
         with self.session.get(URL.login_page()) as response:
             if not response.ok:
                 raise LoginError("Cannot access Stud.IP login page")
-            sso_url = "https://sso.uni-passau.de" + parsers.extract_sso_url(response.text)
-
+            sso_url = parsers.extract_sso_url(response.text)
         login_data = {
-            "j_username": username,
-            "j_password": password,
+            "loginname": username,
+            "password": password,
             "donotcache": 1,
             "_eventId_proceed": ""
         }
-
-        with self.session.post(sso_url, data=login_data) as response:
+        login_data.update(parsers.extract_ph(response.text))
+        with self.session.post(sso_url,data=login_data) as response:
             if not response.ok:
                 raise LoginError("Cannot access SSO server")
-            saml_data = parsers.extract_saml_data(response.text)
-
-        with self.session.post(URL.studip_main(), data=saml_data) as response:
+        with self.session.get(URL.studip_main()) as response:
             if not response.ok:
                 raise LoginError("Cannot access Stud.IP main page")
-
-    def get_couses(self):
+            
+        
+    def get_courses(self):
         with self.session.get(URL.courses()) as response:
             if not response.ok:
                 raise SessionError("Failed to get courses")
-
+            
             return parsers.extract_courses(response.text)
 
     def download(self, course_id, workdir, sync_only=None):

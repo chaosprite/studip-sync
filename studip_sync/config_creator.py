@@ -24,10 +24,8 @@ class ConfigCreator(object):
         password = getpass.getpass()
         save_password = input("Save password (in clear text)? [y/N]: ").lower() in ("y", "yes")
         destination = input("Sync to directory: ")
-
         self._session.login(username, password)
-        courses = list(self._session.get_couses())
-
+        courses = list(self._session.get_courses())
         config = {}
         config["courses"] = courses
         config["user"] = {"login": username}
